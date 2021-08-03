@@ -8,17 +8,26 @@ def get_coordinate_x(csv_file):
     csv_reader = list(csv.reader(file))
     x_list = []
     len_csv = len(csv_reader)
-    
+
+    ##for each 10th point##
+
     for i in range(1,len_csv,9):
-        x_list.append(csv_reader[i][1])
+        try:
+            x_list.append(int(csv_reader[i][1]))
+        except ValueError:
+            x_list.append(int(csv_reader[i][1]))
 
     
     
     # for each point
     
     # for row in csv_reader:
-    #     x_list.append(row[1])
-    # x_list.pop(0)
+    #     try:
+    #         x_list.append(int(row[1]))
+    #     except ValueError:
+    #         x_list.append(row[1])
+        
+    x_list.pop(0)
 
     return(x_list)
 
@@ -29,13 +38,23 @@ def get_coordinate_y(csv_file):
     y_list = []
     len_csv = len(csv_reader)
     
+    #for each 10th point##
     for i in range(1,len_csv,9):
-        y_list.append(csv_reader[i][2])
+        try:
+            y_list.append(int(csv_reader[i][2]))
+        except ValueError:
+            y_list.append(int(csv_reader[i][2]))
 
+
+    # for each point
 
     # for row in csv_reader:
-    #     y_list.append(row[2])
-    #     y_list.pop(0)
+    #     try:
+    #         y_list.append(int(row[2]))
+    #     except ValueError:
+    #         y_list.append(row[2])
+
+    y_list.pop(0)
 
     return(y_list)
 
@@ -48,13 +67,20 @@ def get_time(csv_file):
 
 
     for i in range(1,len_csv,9):
-        t_list.append(csv_reader[i][3])
+        try:
+            t_list.append(float(csv_reader[i][3]))
+        except ValueError:
+            t_list.append(float(csv_reader[i][3]))
 
 
     # for row in csv_reader:
-    #     t_list.append(row[3])
-        # t_list.pop(0)
+    #     try:
+    #         t_list.append(float(row[3]))
+    #     except ValueError:
+    #         t_list.append(row[3])    
         
+    t_list.pop(0)
+
     
     return(t_list)
 
@@ -72,4 +98,4 @@ if __name__== "__main__":
     y = get_coordinate_y(csv_file)
     t = get_time(csv_file)
 
-    print(t)
+    print(x)
