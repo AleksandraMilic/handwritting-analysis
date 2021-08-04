@@ -1,0 +1,115 @@
+### write all features:
+### for each point (x,y)
+### number of points is reduced 
+
+import os
+import glob
+import shutil
+from xi_yi_features import *
+from writing_direction_feature import *
+from vicinity_aspect_feature import *
+from vicinity_curliness_feature import *
+from velocity_features import *
+from synthetic_pressure_feature import *
+from curvature_feature import *
+
+
+def add_files(prev_path, new_path):
+    '''copies all csv obtained files in the new folder'''
+
+    for file in glob.glob(prev_path):
+
+        file_name = file[84:]
+        key = file_name[:-7] #### id_form ####
+        # print(key)
+        writer_folder_path = dict_[key] 
+        new_path = writer_folder_path +'\\' + img_name 
+        # print(path_img,new_path)
+        r=shutil.copyfile(path_img, new_path)
+
+
+    return  
+
+
+def extract_features(file_path,r):
+    '''extract 11 features;
+    r is the gap parameter'''
+    #### POINTS
+    x_list = get_coordinate_x(file_path)
+    y_list = get_coordinate_y(file_path)
+
+    #### TIME
+    time_list = get_time(file_path)
+
+
+    #### VELOCITIES
+    vx_list = get_vx_list(x_list, time_list, r)
+    vy_list = get_vy_list(y_list, time_list, r)
+    V_list = get_V_list(x_list, y_list, time_list, r) 
+    
+    ####  WRITER DIRECTION
+    cosine_list = get_cosine_theta(x_list, y_list,r)
+    sine_list = get_sine_theta(x_list, y_list,r)
+    
+    ####  CURVATURE
+    theta_list = get_theta(cosine_list, sine_list)
+    
+    ####  vICINITY ASPECT
+    vicinity_list = get_vicinity_aspect(x_list, y_list, r)
+    
+    ####  VICINITY CURLINESS
+    vicinity_curliness_list = get_vicinity_curliness(x_list, y_list, r)
+    
+    #### SYNTHETIC WRITER'S PRESSURE AT EACH POINT
+    writer_pressure_list = get_synthetic_pressure(time_list)
+
+    all_features = [vx_list,
+                    vy_list,
+                    V_list,
+                    cosine_list,
+                    sine_list, 
+                    theta_list,
+                    vicinity_list,
+                    vicinity_curliness_list,
+                    writer_pressure_list]
+
+    ### 9 features + x, y coordinates ###
+    return all_features
+
+
+
+
+def add_columns(file_path,r):
+    column_names = ['Velocity x', 
+                    'Velocity y', 
+                    'Velocity', 
+                    'Cosine theta (writting direction)', 
+                    'Sine theta (writting direction)', 
+                    'Theta (curvature)',
+                    'Vicinity aspect',
+                    'Vicinity curliness'
+                    ]
+    all_features = extract_features(file_path,r)
+
+    for i in range(len(column_names)):
+        print(len(all_features[i]))
+        df = pd.read_csv(file_path)
+        df[column_names[i+5]] = all_features[i]
+        df.to_csv(file_path, index=False)
+
+
+    return
+
+
+
+if __name__ == "__main__":
+    # folder_csv = 'D:\\handwritten-analysis\\features_data\\*.csv'
+    # prev_folder_csv = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\lineStrokes-csv\\*.csv'
+    # for csv_file in glob.glob(folder_csv):
+    #     x = get_coordinate_x(csv_file)
+    #     y = get_coordinate_y(csv_file)
+    #     t = get_time(csv_file)
+    r = 10
+    add_files(prev_path, new_path)
+    csv_file = 'D:\\handwritten-analysis\\features_data\\a01-000u-03.csv'
+    add_columns(csv_file,r)
