@@ -82,10 +82,10 @@ if __name__== "__main__":
     dataset_img = 'D:\\handwritten-analysis\\new_dataset\\*'
     folder_csv = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\lineStrokes-csv\\*.csv'
 
-    img_number = 0
-    for writer in glob.glob(dataset_img):
-        for img in glob.glob(writer+'\\*'):
-            img_number+=1
+    # img_number = 0
+    # for writer in glob.glob(dataset_img):
+    #     for img in glob.glob(writer+'\\*'):
+    #         img_number+=1
 
 
     trash_list=trash_files_dataset_img(dataset_img, folder_csv)

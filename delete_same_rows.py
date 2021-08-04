@@ -11,7 +11,7 @@ def delete_rows_pandas(csv_file):
     # df_1 = df.drop(df['time']<=df['time'].shift(-1)) 
     df_1 = df.drop_duplicates(subset=['time'])
     print(df_1.count())
-    print(df_1[5:])
+    # print(df_1[5:])
 
     return df_1
 

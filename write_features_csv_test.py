@@ -17,15 +17,15 @@ from curvature_feature import *
 def add_files(prev_path, new_path):
     '''copies all csv obtained files in the new folder'''
 
-    for file in glob.glob(prev_path):
+    for file_path in glob.glob(prev_path):
 
-        file_name = file[84:]
-        key = file_name[:-7] #### id_form ####
-        # print(key)
-        writer_folder_path = dict_[key] 
-        new_path = writer_folder_path +'\\' + img_name 
+        file_name = file_path[78:] #[84:]
+        # print(file_path)
+        csv_name = file_name[:-4] #### id_form ####
+        # print(key) 
+        new_path_file = new_path + '\\' + csv_name + '.csv'
         # print(path_img,new_path)
-        r=shutil.copyfile(path_img, new_path)
+        r=shutil.copyfile(file_path, new_path_file)
 
 
     return  
@@ -37,6 +37,7 @@ def extract_features(file_path,r):
     #### POINTS
     x_list = get_coordinate_x(file_path)
     y_list = get_coordinate_y(file_path)
+    # print(len(x_list))
 
     #### TIME
     time_list = get_time(file_path)
@@ -47,6 +48,10 @@ def extract_features(file_path,r):
     vy_list = get_vy_list(y_list, time_list, r)
     V_list = get_V_list(x_list, y_list, time_list, r) 
     
+    # print(len(vx_list))
+    # print(len(vy_list))
+
+
     ####  WRITER DIRECTION
     cosine_list = get_cosine_theta(x_list, y_list,r)
     sine_list = get_sine_theta(x_list, y_list,r)
@@ -87,14 +92,17 @@ def add_columns(file_path,r):
                     'Sine theta (writting direction)', 
                     'Theta (curvature)',
                     'Vicinity aspect',
-                    'Vicinity curliness'
+                    'Vicinity curliness',
+                    'Synthetic pressure'
                     ]
     all_features = extract_features(file_path,r)
 
     for i in range(len(column_names)):
         print(len(all_features[i]))
         df = pd.read_csv(file_path)
-        df[column_names[i+5]] = all_features[i]
+        print(df)
+        df[column_names[i]] = all_features[i]
+        print(df)
         df.to_csv(file_path, index=False)
 
 
@@ -109,7 +117,11 @@ if __name__ == "__main__":
     #     x = get_coordinate_x(csv_file)
     #     y = get_coordinate_y(csv_file)
     #     t = get_time(csv_file)
+    
+    
     r = 10
-    add_files(prev_path, new_path)
+    # prev_path = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\lineStrokes-csv\\*.csv'
+    # new_path = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\New folder\\normalized'
+    # add_files(prev_path, new_path)
     csv_file = 'D:\\handwritten-analysis\\features_data\\a01-000u-03.csv'
     add_columns(csv_file,r)
