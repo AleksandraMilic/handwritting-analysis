@@ -14,12 +14,15 @@ def get_theta(cosine_list, sine_list):
         sine = sine_list[i]
         cosine = cosine_list[i]
         
-        try:
-            tan = sine / cosine
-        except ZeroDivisionError:
-            tan = pi/2
+        if sine == None or cosine == None:
+            arctan_theta = None
+        else:
+            try:
+                tan = sine / cosine
+            except ZeroDivisionError:
+                tan = pi/2
 
-        arctan_theta = atan(tan)
+            arctan_theta = atan(tan)
 
         theta_list.append(arctan_theta)
 
