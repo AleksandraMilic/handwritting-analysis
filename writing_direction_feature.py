@@ -29,6 +29,7 @@ def get_cosine_theta(x_list, y_list,r):
         distance = sqrt((x_2-x_1)**2+(y_2-y_1)**2) #euclidean distance
         delta_x = x_2-x_1
         if distance==0:
+            #####################
             cos = None
         else:    
             cos = delta_x / distance

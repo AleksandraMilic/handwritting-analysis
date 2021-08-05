@@ -17,8 +17,12 @@ def get_vicinity_curliness(x_list, y_list, r):
     for i in range(list_len):
   
         heigh, width = get_dimension_box(x_list, y_list, r, list_len, i)
-        diagonal = sqrt(heigh**2 + width**2)
-        vicinity = diagonal / min(heigh, width)
+        
+        if width == 0 or heigh == 0:
+            vicinity = None
+        else:
+            diagonal = sqrt(heigh**2 + width**2)    
+            vicinity = diagonal / min(heigh, width)
        
         vicinity_list.append(vicinity)
 

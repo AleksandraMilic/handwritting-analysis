@@ -13,6 +13,9 @@ from velocity_features import *
 from synthetic_pressure_feature import *
 from curvature_feature import *
 
+from normalize_values import *
+
+
 
 def add_files(prev_path, new_path):
     '''copies all csv obtained files in the new folder'''
@@ -98,30 +101,40 @@ def add_columns(file_path,r):
     all_features = extract_features(file_path,r)
 
     for i in range(len(column_names)):
-        print(len(all_features[i]))
+        # print(len(all_features[i]))
         df = pd.read_csv(file_path)
-        print(df)
+        # print(df)
         df[column_names[i]] = all_features[i]
-        print(df)
+        # print(df)
         df.to_csv(file_path, index=False)
+    
+    df = pd.read_csv(file_path)
+    # print(df)
+    df_2 = normalize_values(df)
+    df_2.to_csv(file_path, index=False)
 
 
-    return
+    return df
 
 
 
 if __name__ == "__main__":
-    # folder_csv = 'D:\\handwritten-analysis\\features_data\\*.csv'
+    folder_csv = 'D:\\handwritten-analysis\\features_data\\*.csv'
+    r = 10
     # prev_folder_csv = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\lineStrokes-csv\\*.csv'
-    # for csv_file in glob.glob(folder_csv):
+    for csv_file in glob.glob(folder_csv):
+        df_2 = add_columns(csv_file,r)
+        print(csv_file)
     #     x = get_coordinate_x(csv_file)
     #     y = get_coordinate_y(csv_file)
     #     t = get_time(csv_file)
     
     
-    r = 10
+   
     # prev_path = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\lineStrokes-csv\\*.csv'
     # new_path = 'D:\\handwritten-analysis\\online-analysis\\task1\\lineStrokes-all\\New folder\\normalized'
     # add_files(prev_path, new_path)
-    csv_file = 'D:\\handwritten-analysis\\features_data\\a01-000u-03.csv'
-    add_columns(csv_file,r)
+    # csv_file = 'D:\\handwritten-analysis\\features_data\\a01-000u-06.csv'
+    
+    # df_2 = normalize_values(df)
+    # get_to_csv(df_2,csv_file)

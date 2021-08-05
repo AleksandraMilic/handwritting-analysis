@@ -53,6 +53,7 @@ def get_dimension_box(x_list, y_list, r, list_len, i):
 
     heigh = y_max-y_min
     width = x_max-x_min 
+    
 
     return heigh, width
 
@@ -68,7 +69,10 @@ def get_vicinity_aspect(x_list, y_list, r):
     for i in range(list_len):
   
         heigh, width = get_dimension_box(x_list, y_list, r, list_len, i)
-        vicinity = heigh / width
+        if width==0:
+            vicinity = None
+        else:
+            vicinity = heigh / width
        
         vicinity_list.append(vicinity)
 
