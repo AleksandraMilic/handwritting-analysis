@@ -73,31 +73,31 @@ def get_data(writers_classes_file, features_files):
 
 def fit_dataset(data):
 
-    kf = KFold(n_splits=5)
+    kf = KFold(n_splits=5, shuffle=True)
 
     for train_index, test_index in kf.split(data):
         print("%s %s" % (train_index, test_index))
 
         XY = [data[i] for i in train_index] ## [[features...],[0,1,0,0...]]...[[],[]]
-        X_train = [i[:-1] for i in XY]
-        Y_train = [i[-1:] for i in XY]
+        X_train = [i[0] for i in XY]
+        Y_train = [i[-1] for i in XY]
 
         XY = [data[i] for i in test_index]
-        X_test = [i[:-1] for i in XY]
-        Y_test = [i[-1:] for i in XY]
+        X_test = [i[0] for i in XY]
+        Y_test = [i[-1] for i in XY]
 
         # print(X_train.shape), len(Y_train.shape)
         # print(X_test, Y_test)
 
         
     
-        X_train = np.array(X_train, dtype=object) #,   #np.asarray(X_train).astype(np.float32) #
-        Y_train = np.array(Y_train, dtype=object) #np.asarray(Y_train).astype(np.float32)
+        # X_train = np.array(X_train, dtype=object) #,   #np.asarray(X_train).astype(np.float32) #
+        # Y_train = np.array(Y_train, dtype=object) #np.asarray(Y_train).astype(np.float32)
 
         
 
-        X_test = np.array(X_test, dtype=object)
-        Y_test = np.array(Y_test, dtype=object) #np.asarray(Y_test).astype(np.float32)
+        # X_test = np.array(X_test, dtype=object)
+        # Y_test = np.array(Y_test, dtype=object) #np.asarray(Y_test).astype(np.float32)
 
         # X_train = tf.convert_to_tensor(X_train)
         # Y_train = tf.convert_to_tensor(Y_train
@@ -105,30 +105,38 @@ def fit_dataset(data):
         # X_test = tf.convert_to_tensor(X_test)
         # Y_test = tf.convert_to_tensor(Y_test)
 
+
+
         #RAGGED
         
+        X_train = tf.ragged.constant(X_train)
+        Y_train = tf.ragged.constant(Y_train)
 
-      
-
-
+        X_test = tf.ragged.constant(X_test)
+        Y_test = tf.ragged.constant(Y_test)
+        
         model = get_model(X_train)
-        # X_train = tf.constant(X_train)
-        Y_train = tf.constant(Y_train)
 
-        X_test = tf.constant(X_test)
-        Y_test = tf.constant(Y_test)
+        X_train = X_train.to_tensor()
+        Y_train = Y_train.to_tensor()
+        
+
+        X_test = X_test.to_tensor()
+        Y_test = Y_test.to_tensor()
+        
+
         print(X_train.shape, Y_train.shape)
-        print(X_test.shape, Y_test.shape)
+        # print(X_train, Y_train)
 
         model.fit(X_train, Y_train, 
-                    batch_size=2048, epochs=150,
+                    epochs=15, #batch_size=2048
                     validation_data=(X_test, Y_test))
 
         score,acc = model.evaluate(X_test, Y_test, verbose = 2)
         print("Logloss score: %.2f" % (score))
         print("Validation set Accuracy: %.2f" % (acc))
 
-        break
+        
 
 
 
