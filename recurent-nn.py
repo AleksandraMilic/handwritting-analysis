@@ -1,9 +1,12 @@
+from get_model import *
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
 # from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 # from tensorflow.keras.models import Sequential
+import tensorflow as tf
 from tensorflow import keras
+# from tensorflow.keras import layers
 from sklearn.model_selection import KFold
 
 
@@ -75,28 +78,61 @@ def fit_dataset(data):
     for train_index, test_index in kf.split(data):
         print("%s %s" % (train_index, test_index))
 
-        X_Y = [data[i] for i in train_index] ## [[features...],[0,1,0,0...]]...[[],[]]
-        X_train = [i[:-1] for i in X_Y]
-        Y_train = [i[-1] for i in X_Y]
+        XY = [data[i] for i in train_index] ## [[features...],[0,1,0,0...]]...[[],[]]
+        X_train = [i[:-1] for i in XY]
+        Y_train = [i[-1:] for i in XY]
 
-        X_Y = [data[i] for i in test_index]
-        X_test = [i[:-1] for i in X_Y]
-        Y_test = [i[-1] for i in X_Y]
+        XY = [data[i] for i in test_index]
+        X_test = [i[:-1] for i in XY]
+        Y_test = [i[-1:] for i in XY]
 
-        print(X_train, Y_train)
-        print(X_test, Y_test)
+        # print(X_train.shape), len(Y_train.shape)
+        # print(X_test, Y_test)
+
         
+    
+        X_train = np.array(X_train, dtype=object) #,   #np.asarray(X_train).astype(np.float32) #
+        Y_train = np.array(Y_train, dtype=object) #np.asarray(Y_train).astype(np.float32)
+
+        
+
+        X_test = np.array(X_test, dtype=object)
+        Y_test = np.array(Y_test, dtype=object) #np.asarray(Y_test).astype(np.float32)
+
+        # X_train = tf.convert_to_tensor(X_train)
+        # Y_train = tf.convert_to_tensor(Y_train
+
+        # X_test = tf.convert_to_tensor(X_test)
+        # Y_test = tf.convert_to_tensor(Y_test)
+
+        #RAGGED
+        
+
+      
+
+
+        model = get_model(X_train)
+        # X_train = tf.constant(X_train)
+        Y_train = tf.constant(Y_train)
+
+        X_test = tf.constant(X_test)
+        Y_test = tf.constant(Y_test)
+        print(X_train.shape, Y_train.shape)
+        print(X_test.shape, Y_test.shape)
+
+        model.fit(X_train, Y_train, 
+                    batch_size=2048, epochs=150,
+                    validation_data=(X_test, Y_test))
+
+        score,acc = model.evaluate(X_test, Y_test, verbose = 2)
+        print("Logloss score: %.2f" % (score))
+        print("Validation set Accuracy: %.2f" % (acc))
+
         break
-    # train = dataset[train_index]
-    # test = dataset[test_index]
-    # print(train, test)
 
 
 
-
-
-
-    return
+    return 
 
 
 
