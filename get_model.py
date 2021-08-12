@@ -7,22 +7,25 @@ def get_model(X_train):
     model = keras.Sequential()
 
     # model.add(layers.Embedding(input_dim=1000, output_dim=4))
-    print(X_train.shape)
-    # print(X_train[0].shape)
+    max_seq = X_train.bounding_shape()[-1]
+    print(max_seq)
 
-    model.add(layers.LSTM(128, input_shape=X_train.shape, activation='relu', return_sequences=True))
+    model.add(layers.Input(shape=[None, max_seq], dtype=tf.float32, ragged=True))  #Warning: use InputLayer?
+    #, batch_size=99
+    
+    model.add(layers.LSTM(128))
     model.add(layers.Dropout(0.2))
 
-    model.add(layers.LSTM(128, activation='relu'))
-    model.add(layers.Dropout(0.2))
+    # model.add(layers.LSTM(128, activation='relu'))
+    # model.add(layers.Dropout(0.2))
 
-    model.add(layers.Dense(32, activation='relu'))
-    model.add(layers.Dropout(0.2))
+    # model.add(layers.Dense(32, activation='relu'))
+    # model.add(layers.Dropout(0.2))
 
     model.add(layers.Dense(4, activation='softmax')) #class
     # model.add(layers.Dropout(0.2))
 
-    # model.summary()
+    
 
     # model.compile(
     # loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -30,6 +33,7 @@ def get_model(X_train):
     # metrics=["accuracy"],)
 
     opt = tf.keras.optimizers.Adam(lr=1e-3, decay=1e-5)
-    model.compile(loss='sparse_categorical_crossentropy', optimizer=opt, metrics=["accuracy"])
+    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=["accuracy"])
+    model.summary()
 
     return model
