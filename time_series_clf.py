@@ -34,7 +34,7 @@ def real_time(model,X_train, Y_train, X_test, Y_test):
     step =  min_t // 3
 
     for i in range(1,min_t,step):
-        new_test_X = X_test[:i]
+        new_test_X = [x[:i] for x in X_train]
         new_test_Y = Y_test[:i] 
 
         model.fit(X_train, Y_train, 
