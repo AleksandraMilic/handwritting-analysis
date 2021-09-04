@@ -1,6 +1,6 @@
 import os
 import multiprocessing as mp
-from multiprocessing import Pool #Process, Manager
+from multiprocessing import Pool, Manager #Process, 
 from decouple import config
 from get_model import *
 import numpy as np
@@ -133,7 +133,7 @@ def get_training_set(data, trainig_index, test_index):
 
 
 
-def optimize_model(data, train_index, test_index, parameters):
+def optimize_model(data, train_index, test_index, parameters, key):
     print('-----',train_index, test_index)
     batch_size = parameters[0]
     epochs = parameters[1]
@@ -179,7 +179,7 @@ def optimize_model(data, train_index, test_index, parameters):
 
     # return_dict[key] = np.array([score, acc])
     # return_dict[key] = [score, acc]
-    result = [score, acc]
+    result = [key, score, acc]
 
     return result
     # return score, acc
@@ -198,50 +198,58 @@ def optimize_model(data, train_index, test_index, parameters):
 #     else:
 #         return higest_acc, train_index, test_index
 
-
-
+list_ = []
+def f(result):
+    list_.append(result)
 
 
 def fit_dataset(data,parameters):
-    n_splits=3
+
+
+
+    n_splits=2
     kf = KFold(n_splits=n_splits, shuffle=True) #5 or 3
     # higest_acc = 0
     score_list = []
     accuracy_list = []
     index_list = [[train_index, test_index] for train_index, test_index in kf.split(data)]
     # print(index_list)
-
+    # with Manager() as manager:
+    #     return_dict = manager.dict()
     pool = Pool(mp.cpu_count()-1)
-    result_list = []
+    
+    return_dict = dict()
+
    
     # key = 1
-    for train_index, test_index in index_list:
+    for (train_index, test_index), key in zip(index_list, range(n_splits)):
 
         # print("%s %s" % (train_index, test_index))
-        print('--------------------------')
+        # print('--------------------------')
         # score, acc = optimize_model(data, train_index, test_index, parameters, return_dict, key) # return best_trainig_index, best_test_index
-        result_ = pool.apply_async(optimize_model, args=(data, train_index, test_index, parameters))
-        result_list.append(result_.get())
-    print(result_list)
+        pool.apply_async(optimize_model, args=(data, train_index, test_index, parameters, key, ), callback=f) #, key, return_dict
+        # result_list.append(result_)
+        # print(key)
+    
     pool.close()
     pool.join()
-        
+    # print(result_list)    
         # p = Process(target=optimize_model, args=(data, train_index, test_index, parameters, return_dict, key))
         # jobs.append(p)
         # p.start()
 
     # for proc in jobs:
     #     proc.join()
-
-    # new_dict = {key: value for key, value in sorted(return_dict.items(), key=lambda item: item[1])}
-    # print(new_dict)
+    print('-----list_', list_)
+    new_list = [[value[1],value[2]] for  value in sorted(list_, key=lambda item: item[0])]
+    print(new_list)
     # list_ = new_dict.values()
 
-    # score_list = [i[0] for i in list_]
-    # accuracy_list = [i[1] for i in list_]
+    score_list = [i[0] for i in new_list]
+    accuracy_list = [i[1] for i in new_list]
 
-    score_list = [i[0] for i in result_list]
-    accuracy_list = [i[1] for i in result_list]
+    # score_list = [i[0] for i in result_list]
+    # accuracy_list = [i[1] for i in result_list]
 
     dataset_index = accuracy_list.index(max(accuracy_list))
     best_train_index = index_list[dataset_index][0]
@@ -303,10 +311,10 @@ if __name__== "__main__":
     
 
     batch_size=1 #1
-    epochs=10
-    lr = 0.01  
+    epochs=1
+    lr = 0.1  
     activation = 'relu'
-    dropout = 0.01
+    dropout = 0.1
     
     parameters = [batch_size, epochs, lr, activation, dropout]
 
