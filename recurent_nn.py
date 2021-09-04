@@ -1,7 +1,7 @@
 import os
 import multiprocessing as mp
 from multiprocessing import Pool, Manager #Process, 
-from decouple import config
+# from decouple import config
 from get_model import *
 import numpy as np
 import pandas as pd
@@ -100,12 +100,12 @@ def export_results(score,acc,parameters):
     os.environ['EXPORT_FILE'] = ExportToFile
     ExportToFile = os.environ.get('EXPORT_FILE')
 
-    '''
+    
     folder = 'D:\\handwritten-analysis\\results-test\\' #### environ var
     os.environ['FOLDER'] = folder
     folder = os.environ.get('FOLDER')
-    '''
-    folder = config('FOLDER')
+    
+    # folder = config('FOLDER')
 
     
     prediction = pd.DataFrame(list(zip(parameters, acc,  score)),
@@ -282,7 +282,6 @@ if __name__== "__main__":
     ####### TEST ALL !!!!!!!
     # os.environ['WRITERS_CL']='D:\\handwritten-analysis\\writer-identification\\writers_classes.csv'
     # writers_classes_file = os.environ.get('WRITERS_CL')
-    # writers_classes_file = config('WRITERS_CL')
 
     
     #####RUNNING ON CPU
@@ -291,15 +290,14 @@ if __name__== "__main__":
     
     
     ####### TEST: 124 files #######
-    '''os.environ['WRITERS_CL_TEST'] = 'D:\\handwritten-analysis\\writer-identification\\classification_test.csv'
+    os.environ['WRITERS_CL_TEST'] = 'D:\\handwritten-analysis\\writer-identification\\classification_test.csv'
     writers_classes_file = os.environ.get('WRITERS_CL_TEST')
-    print(writers_classes_file)'''
-    writers_classes_file = config('WRITERS_CL_TEST')
-    '''
+    print(writers_classes_file)
+    
     os.environ['FEATURES_FILES'] = 'D:\\handwritten-analysis\\features_data\\testing\\'       
     features_files = os.environ.get('FEATURES_FILES')
-    '''
-    features_files = config('FEATURES_FILES')
+    
+    # features_files = config('FEATURES_FILES')
 
 
     # from tensorflow.python.client import device_lib
