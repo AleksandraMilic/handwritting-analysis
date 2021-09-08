@@ -1,6 +1,6 @@
 import os
 import multiprocessing as mp
-from multiprocessing import Pool, Manager #Process, 
+from multiprocessing import Pool, Lock, Process, Manager, Queue #, 
 # from decouple import config
 from get_model import *
 import numpy as np
@@ -85,7 +85,7 @@ def get_data(writers_classes_file, features_files):
 
     df1 = encoded_data(df1)
 
-    print(df1)
+    # print(df1)
 ### returns dataframe of two columns:  features (of handwrittings)  and and class_encoded
 
     return df1
@@ -131,15 +131,20 @@ def get_training_set(data, trainig_index, test_index):
     return X_train, Y_train, X_test, Y_test
 
 
+# return_list = []
+def optimize_model(data, train_index, test_index, parameters, key, lock, return_dict):
+# def optimize_model(data, train_index, test_index, parameters, key):
+    
 
-
-def optimize_model(data, train_index, test_index, parameters, key):
     print('-----',train_index, test_index)
     batch_size = parameters[0]
     epochs = parameters[1]
     lr = parameters[2]  
     activation = parameters[3]
     dropout = parameters[4]
+
+    
+    lock.acquire()
 
     X_train, Y_train, X_test, Y_test = get_training_set(data, train_index, test_index)
 
@@ -167,8 +172,9 @@ def optimize_model(data, train_index, test_index, parameters, key):
 
     print(X_train.shape, Y_train.shape)
     # print(X_train, Y_train)
+    
 
-    model.fit(X_train, Y_train, 
+    f = model.fit(X_train, Y_train, 
             epochs=epochs, batch_size=batch_size,
             validation_data=(X_test1, Y_test))
 
@@ -179,95 +185,93 @@ def optimize_model(data, train_index, test_index, parameters, key):
 
     # return_dict[key] = np.array([score, acc])
     # return_dict[key] = [score, acc]
-    result = [key, score, acc]
-
-    return result
-    # return score, acc
-
-
-
-
-# def get_higest_acc(acc, higest_acc, train_index, test_index):
+    # result = [key, score, acc]
+    # q.put(result)
     
-#     if higest_acc < acc:
-#         higest_acc = acc
-#         best_trainig_index = train_index
-#         best_test_index = test_index
-#         return higest_acc, best_trainig_index, best_test_index
+    return_dict[key] = [score, acc]
+
+    lock.release()
+
     
-#     else:
-#         return higest_acc, train_index, test_index
 
-list_ = []
-def f(result):
-    list_.append(result)
-
-
-def fit_dataset(data,parameters):
+    return 
+    # return [score, acc]
 
 
 
-    n_splits=2
+
+
+def fit_dataset(data,parameters, lock):
+
+    
+    n_splits=5
     kf = KFold(n_splits=n_splits, shuffle=True) #5 or 3
     # higest_acc = 0
     score_list = []
     accuracy_list = []
     index_list = [[train_index, test_index] for train_index, test_index in kf.split(data)]
-    # print(index_list)
-    # with Manager() as manager:
-    #     return_dict = manager.dict()
-    pool = Pool(mp.cpu_count()-1)
+    manager = Manager()
+    return_dict = manager.dict()
     
-    return_dict = dict()
+#     t = [  0,  1,   2,   3,   5,   6,   7,   8,   9,  12,  13,  15,  16,  17,  18,  19,  23,  25,
+#   26,  27,  30,  31,  32,  34,  35,  36,  37,  38,  39,  41,  42,  45,  46,  47,  48,  51,
+#   55,  59,  70,  74,  76,  84,  85,  90,  92,  94,  97,  98,  99 ,100, 102 ,105 ,106 ,107,
+#  110, 111, 113, 114, 115, 116, 117, 123] 
+#     t2 = [  4,  10,  11,  14,  20,  21,  22,  24,  28,  29,  33,  40,  43,  44,  49,  50,  52,  53,
+#   54,  56,  57,  58,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  71,  72,  73,  75,
+#   77,  78,  79,  80,  81,  82,  83,  86,  87,  88,  89,  91,  93,  95,  96, 101, 103, 104,
+#  108 ,109, 112, 118, 119, 120, 121, 122]
+    
+    processes = [Process(target=optimize_model, args=(data, train_index, test_index, parameters, key, lock, return_dict)) for (train_index, test_index), key in zip(index_list, range(n_splits))]
+    for process in processes:
+        process.start()
+    
+    for process in processes:
+        process.join()
+    print(return_dict)
 
-   
+
+    # l = [] single threading version
+    # for (train_index, test_index), key in zip(index_list, range(n_splits)):
+    #     r = optimize_model(data, t, t2, parameters, key)
+    #     l.append(r)
+    # print(l)
+    '''ne radi
     # key = 1
-    for (train_index, test_index), key in zip(index_list, range(n_splits)):
-
+        # d = [data, t, t2, parameters, key]
         # print("%s %s" % (train_index, test_index))
         # print('--------------------------')
-        # score, acc = optimize_model(data, train_index, test_index, parameters, return_dict, key) # return best_trainig_index, best_test_index
-        pool.apply_async(optimize_model, args=(data, train_index, test_index, parameters, key, ), callback=f) #, key, return_dict
+         # return best_trainig_index, best_test_index
+        # with lock:
+        pool.apply_async(optimize_model, args=(data, t, t2, parameters, key, ), callback=f) #, key, return_dict
+        # list_ = pool.map(optimize_model, d)
         # result_list.append(result_)
         # print(key)
+    for i in range(n_splits):
+        pool.close()
+        # pool.start()
+    for i in range(n_splits):
+        pool.join()
+    '''
     
-    pool.close()
-    pool.join()
-    # print(result_list)    
-        # p = Process(target=optimize_model, args=(data, train_index, test_index, parameters, return_dict, key))
-        # jobs.append(p)
-        # p.start()
-
-    # for proc in jobs:
-    #     proc.join()
-    print('-----list_', list_)
-    new_list = [[value[1],value[2]] for  value in sorted(list_, key=lambda item: item[0])]
-    print(new_list)
-    # list_ = new_dict.values()
+   
+    # new_dict = {k: value for  k, value in sorted(return_dict, key=lambda item: k)}
+    # print(new_list)
+    new_list = return_dict.values()
 
     score_list = [i[0] for i in new_list]
     accuracy_list = [i[1] for i in new_list]
 
-    # score_list = [i[0] for i in result_list]
-    # accuracy_list = [i[1] for i in result_list]
-
+ 
     dataset_index = accuracy_list.index(max(accuracy_list))
     best_train_index = index_list[dataset_index][0]
     best_test_index = index_list[dataset_index][1]
 
-        # higest_acc, best_trainig_index, best_test_index = get_higest_acc(acc, higest_acc, train_index, test_index)        
-        
-        # score_list.append(score)
-        # accuracy_list.append(acc)
+  
 
     export_results(score_list, accuracy_list, parameters)
-    print(best_train_index)
+    # print(best_train_index)
     X_train, Y_train, X_test, Y_test= get_training_set(data, best_train_index, best_test_index) # get the best training set
-
-    # return_dict['1'] = X_train
-    # return_dict['2'] = Y_train
-    # return_dict['3'] = X_test
-    # return_dict['4'] = Y_test
 
 
     return X_train, Y_train, X_test, Y_test
@@ -292,7 +296,7 @@ if __name__== "__main__":
     ####### TEST: 124 files #######
     os.environ['WRITERS_CL_TEST'] = 'D:\\handwritten-analysis\\writer-identification\\classification_test.csv'
     writers_classes_file = os.environ.get('WRITERS_CL_TEST')
-    print(writers_classes_file)
+    # print(writers_classes_file)
     
     os.environ['FEATURES_FILES'] = 'D:\\handwritten-analysis\\features_data\\testing\\'       
     features_files = os.environ.get('FEATURES_FILES')
@@ -309,31 +313,21 @@ if __name__== "__main__":
     
 
     batch_size=1 #1
-    epochs=1
-    lr = 0.1  
-    activation = 'relu'
-    dropout = 0.1
+    epochs=1 
+    lr = 0.01  
+    activation = 'tanh'
+    dropout = 0.01
     
     parameters = [batch_size, epochs, lr, activation, dropout]
+    lock = Lock()
+
+    ####################+2+8+4(+4)
 
 
     data_frame = get_data(writers_classes_file, features_files)
     data_list = data_frame.values.tolist()
+   
+    fit_dataset(data_list, parameters, lock)
+    # X_train, Y_train, X_test, Y_test = fit_dataset(data_list, parameters, lock)
+    # real_time(model,X_train, Y_train, X_test, Y_test)
     
-
-    X_train, Y_train, X_test, Y_test = fit_dataset(data_list, parameters)
-    # p1 = Process(target=fit_dataset, args=(data_list, parameters, return_dict))
-    # p1.start()
-    # p1.join()
-
-    # real_time(X_train, Y_train, X_test, Y_test, parameters)
-    
-    # list_set = return_dict.values()
-    # X_train = list_set[0]
-    # Y_train = list_set[1]
-    # X_test = list_set[2]
-    # Y_test = list_set[3]
-
-    # p2 = Process(target=real_time, args=(X_train, Y_train, X_test, Y_test, parameters))
-    # p2.start()
-    # p2.join()
