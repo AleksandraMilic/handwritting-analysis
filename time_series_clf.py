@@ -2,7 +2,7 @@ from recurent_nn import *
 from get_model import *
 import tensorflow as tf 
 from tensorflow import keras
-from decouple import config
+# from decouple import config
 # from tensorflow.keras import layers
 import time
 import numpy as np
@@ -13,7 +13,7 @@ from pandas.core.frame import DataFrame
 def find_min_t(X_test):
     min_t = 10**6
     for handwritting in X_test:
-        print(len(handwritting))
+        # print(len(handwritting))
         if len(handwritting) < min_t:
             min_t = len(handwritting)
 
@@ -24,8 +24,9 @@ def export_results2(score,acc):
     ExportToFile="rnn-test-time-series-clf"+time.strftime("%Y-%m-%d-%H-%M-%S")+".csv"
     os.environ['EXPORT'] = ExportToFile
     ExportToFile = os.environ.get('EXPORT')
-    # folder = 'D:\\handwritten-analysis\\results-test\\'
-    folder = config('FOLDER')
+    folder = 'D:/handwritten-analysis/results-test/'
+    os.environ['FOLDER'] = folder
+    folder = os.environ['FOLDER']
     
     prediction = pd.DataFrame(list(zip(score, acc)),
                columns =['scores', 'accuracy'])
@@ -44,18 +45,19 @@ def real_time(X_train, Y_train, X_test, Y_test,parameters):
     dropout = parameters[4]
 
     X_train = tf.ragged.constant(X_train)
-    Y_train = tf.ragged.constant(Y_train).to_tensor()
+    Y_train = tf.ragged.constant(Y_train)
+    Y_train = Y_train.to_tensor()
     Y_test = tf.ragged.constant(Y_test).to_tensor()
 
     
-    model = get_model(X_train,lr,activation,dropout)
+    model = get_model(X_train,lr,activation,dropout,epochs)
 
     X_train = X_train.to_tensor()
 
     
     print('----------real_time------------')
     min_t = find_min_t(X_test)
-    step =  min_t // 3 #only min_t
+    step =  min_t // 10 #only min_t
     print('min_t',min_t)
 
     for i in range(1,min_t+1,step):
@@ -63,8 +65,8 @@ def real_time(X_train, Y_train, X_test, Y_test,parameters):
         new_test_X = X_test[:]
         for x in range(len(X_test)):
             new_test_X[x] = new_test_X[x][:i]  ###cut data 
-            if x==0:
-                print('x',new_test_X[x])
+            # if x==0:
+                # print('x',new_test_X[x])
 
         X_test1 = tf.ragged.constant(new_test_X).to_tensor()
     
@@ -83,7 +85,7 @@ def real_time(X_train, Y_train, X_test, Y_test,parameters):
         score_list.append(score)
         accuracy_list.append(acc)
 
-        export_results2(score_list, accuracy_list)
+    export_results2(score_list, accuracy_list)
 
 
 
